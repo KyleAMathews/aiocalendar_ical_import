@@ -1,0 +1,28 @@
+<?php
+
+include_once('aio_calendar_ical_import.features.inc');
+
+/**
+ * Implementation of hook_nodeapi
+ */
+function aio_calendar_ical_import_nodeapi (&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($op == 'insert' && $node->type = "calendar_event") {
+    $ical_feed_nid = db_result(db_query("SELECT feed_nid
+                                        FROM {feedapi_node_item_feed}
+                                        WHERE feed_item_nid = %d", $node->nid));
+    
+    if (!$ical_feed_nid) {
+      return;
+    }
+    $tid = db_result(db_query("SELECT tid
+                              FROM {term_node}
+                              WHERE nid = %d", $ical_feed_nid));
+    $term = array(
+      'nid' => $node->nid,
+      'vid' => $node->vid,
+      'tid' => $tid,
+    );
+    
+    drupal_write_record('term_node', $term);
+  }
+}
